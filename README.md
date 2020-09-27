@@ -107,4 +107,4 @@ MUNIT (Huang et al. (2018)), (i) DRIT (Lee et al. (2018)), (j) AGGAN (Mejjati et
 </div>
 
 # 获取更多
-更多论文研读信息参见CSDN blog: (DeepHao 【飞桨】GAN：U-GAT-IT【2020 ICLR】论文研读)[https://blog.csdn.net/qq_39567427/article/details/107843670]
+更多论文研读信息参见CSDN blog: [DeepHao 【飞桨】GAN：U-GAT-IT【2020 ICLR】论文研读](https://blog.csdn.net/qq_39567427/article/details/107843670)
