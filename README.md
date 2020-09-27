@@ -102,7 +102,7 @@ MUNIT (Huang et al. (2018)), (i) DRIT (Lee et al. (2018)), (j) AGGAN (Mejjati et
 
 # Pytorch 与 Paddle训练效果对比
 <div align="center">
-  <img src="./assets/pytorch.jpg" height="290"/><img src="./assets/paddle.jpg" height="290"/><br>
+  <img src="./assets/pytorch.jpg" height="200"/><img src="./assets/paddle.jpg" height="200"/><br>
 </div>
 左边为Pytorch训练损失，右边为Paddle训练损失（部分）
 
