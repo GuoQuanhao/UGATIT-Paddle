@@ -102,9 +102,9 @@ MUNIT (Huang et al. (2018)), (i) DRIT (Lee et al. (2018)), (j) AGGAN (Mejjati et
 
 # Pytorch 与 Paddle训练效果对比
 <div align="center">
-  <img src="./assets/pytorch.jpg" height="290"/><img src="./assets/paddle.jpg" height="290"/><br><font face="Times New Norman" size=4>Pytorch&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;Paddle
-</font>
+  <img src="./assets/pytorch.jpg" height="290"/><img src="./assets/paddle.jpg" height="290"/><br>
 </div>
+左边为Pytorch训练损失，右边为Paddle训练损失（部分）
 
 # 获取更多
 更多论文研读信息参见CSDN blog: [DeepHao 【飞桨】GAN：U-GAT-IT【2020 ICLR】论文研读](https://blog.csdn.net/qq_39567427/article/details/107843670)
