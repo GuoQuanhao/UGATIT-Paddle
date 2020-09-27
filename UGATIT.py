@@ -455,9 +455,7 @@ class UGATIT(object) :
     
                 cv2.imwrite(os.path.join(self.result_dir, self.dataset, 'test', 'A2B_%d.png' % (n + 1)), A2B * 255.0)
     
-            for n, (real_B, _) in enumerate(self.testB_loader):
-                if n>6:
-                    break                
+            for n, (real_B, _) in enumerate(self.testB_loader):             
                 real_B = fluid.dygraph.to_variable(real_B)
     
                 fake_B2A, _, fake_B2A_heatmap = self.genB2A(real_B)
