@@ -66,7 +66,7 @@ The results of the paper came from the **Tensorflow code**
 
 ➢LayerNorm更多的考虑输入特征通道之间的相关性，LN比IN风格转换更彻底，但是语义信息保存不足
 ➢InstanceNorm更多考虑单个特征通道的内容，IN比LN更好的保存原图像的语义信息，但是风格转换不彻底
-➢论文中，通过上诉公式，自适应的调整$\rho$的参数值来得到更优化的网络模型
+➢论文中，通过上诉公式，自适应的调整参数来得到更优化的网络模型
 
 <div align="center"><img src="https://img-blog.csdnimg.cn/20200806170916141.png" width="700"/><br><font face="楷体" size=4>几种归一化方法示例</font></div>
 
