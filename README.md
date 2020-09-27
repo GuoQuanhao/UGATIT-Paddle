@@ -68,8 +68,7 @@ The results of the paper came from the **Tensorflow code**
 ➢InstanceNorm更多考虑单个特征通道的内容，IN比LN更好的保存原图像的语义信息，但是风格转换不彻底
 ➢论文中，通过上诉公式，自适应的调整$\rho$的参数值来得到更优化的网络模型
 
-<center><img src="https://img-blog.csdnimg.cn/20200806170916141.png" width="700"/></center>
-<center><font face="楷体" size=4>几种归一化方法示例</font></center>
+<div align="center"><img src="https://img-blog.csdnimg.cn/20200806170916141.png" width="700"/><br><font face="楷体" size=4>几种归一化方法示例</font></div>
 
 |方法| 作用 |
 |:--|:--|
