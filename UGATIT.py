@@ -47,6 +47,8 @@ class UGATIT(object) :
         self.device = args.device
         self.benchmark_flag = args.benchmark_flag
         self.resume = args.resume
+        """ Start_iter """
+        self.start_iter = args.start_iter
 
 
         print()
@@ -56,6 +58,7 @@ class UGATIT(object) :
         print("# dataset : ", self.dataset)
         print("# batch_size : ", self.batch_size)
         print("# iteration per epoch : ", self.iteration)
+        print("# start iteration per epoch : ", self.start_iter)
 
         print()
 
@@ -112,19 +115,19 @@ class UGATIT(object) :
             self.BCE_loss = BCEWithLogitsLoss()       
     
             """ Trainer """
-            
             self.G_optim  = fluid.optimizer.Adam(#learning_rate=self.lr,
-                                                 build_lr_scheduler('AdamOptimizer', self.lr, self.iteration),
+                                                 build_lr_scheduler('AdamOptimizer', self.lr, self.iteration, self.start_iter),
                                                  beta1=0.5, beta2=0.999,
                                                  parameter_list=self.genA2B.parameters()+self.genB2A.parameters(),
                                                  regularization=fluid.regularizer.L2Decay(regularization_coeff=self.weight_decay))
             
             self.D_optim  = fluid.optimizer.Adam(#learning_rate=self.lr,
-                                                build_lr_scheduler('AdamOptimizer', self.lr, self.iteration),
+                                                 build_lr_scheduler('AdamOptimizer', self.lr, self.iteration, self.start_iter),
                                                  beta1=0.5, beta2=0.999,
                                                  parameter_list=self.disGA.parameters()+self.disGB.parameters()+self.disLA.parameters()+self.disLB.parameters(),
                                                  regularization=fluid.regularizer.L2Decay(regularization_coeff=self.weight_decay))    
-            start_iter = 1
+
+            #start_iter = 1
             if self.resume:
                 print('load model!!!')
                 self.sload()
@@ -132,7 +135,7 @@ class UGATIT(object) :
             # training loop
             print('training start !')
             start_time = time.time()
-            for step in range(start_iter, self.iteration + 1):  
+            for step in range(self.start_iter, self.iteration + 1):  
                 try:
                     real_A, _ = next(trainA_iter)
                 except:
@@ -278,7 +281,7 @@ class UGATIT(object) :
                 clip_rho(self.genA2B)
                 clip_rho(self.genB2A)
         
-                print("[%5d/%5d] time: %4.4f d_loss: %.8f, g_loss: %.8f G_lr: %.8f D_lr: %.8f" % 
+                print("[%5d/%5d] time: %4.4f d_loss: %.8f, g_loss: %.8f G_lr: %.10f D_lr: %.10f" % 
                         (step, self.iteration, time.time() - start_time,
                          Discriminator_loss,
                          Generator_loss,
@@ -455,7 +458,7 @@ class UGATIT(object) :
     
                 cv2.imwrite(os.path.join(self.result_dir, self.dataset, 'test', 'A2B_%d.png' % (n + 1)), A2B * 255.0)
     
-            for n, (real_B, _) in enumerate(self.testB_loader):             
+            for n, (real_B, _) in enumerate(self.testB_loader):           
                 real_B = fluid.dygraph.to_variable(real_B)
     
                 fake_B2A, _, fake_B2A_heatmap = self.genB2A(real_B)

@@ -13,7 +13,7 @@ def parse_args():
 
     parser.add_argument('--iteration', type=int, default=1000000, help='The number of training iterations')
     parser.add_argument('--batch_size', type=int, default=1, help='The size of batch size')
-    parser.add_argument('--print_freq', type=int, default=1000, help='The number of image print freq')
+    parser.add_argument('--print_freq', type=int, default=10000, help='The number of image print freq')
     parser.add_argument('--save_freq', type=int, default=100000, help='The number of model save freq')
     parser.add_argument('--decay_flag', type=str2bool, default=True, help='The decay_flag')
 
@@ -35,6 +35,7 @@ def parse_args():
     parser.add_argument('--device', type=str, default='cuda', choices=['cpu', 'cuda'], help='Set gpu mode; [cpu, cuda]')
     parser.add_argument('--benchmark_flag', type=str2bool, default=False)
     parser.add_argument('--resume', type=str2bool, default=False)
+    parser.add_argument('--start_iter', type=int, default=1, help='The start iteration of training')
 
     return check_args(parser.parse_args())
 
@@ -63,6 +64,13 @@ def main():
     # parse arguments
     args = parse_args()
     if args is None:
+        exit()
+
+    # start iter must < iteration:
+    if args.start_iter > args.iteration:
+        print('start_iter must < iteration')
+        print('start_iter = ', args.start_iter)
+        print('iteration = ', args.iteration)
         exit()
 
     # open session
