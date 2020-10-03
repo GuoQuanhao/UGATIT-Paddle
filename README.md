@@ -44,6 +44,12 @@ The results of the paper came from the **Tensorflow code**
 ```
 * If the memory of gpu is **not sufficient**, set `--light` to True
 
+### Resume Train
+```
+> python main.py --dataset selfie2anime --resume True --start_iter <123456 for example>
+```
+* If the memory of gpu is **not sufficient**, set `--light` to True
+
 ### Test
 ```
 > python main.py --dataset selfie2anime --phase test
