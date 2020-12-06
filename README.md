@@ -37,7 +37,8 @@ The results of the paper came from the **Tensorflow code**
            ├── ddd.png
            └── ...
 ```
-
+**Attention: if you train the light model, you have to use `--light True` for all the next step,such as `Train`  `Resume Train` `Test create`**
+**I use selfie2anime dataset for example, the dataset has been placed in data directory, you can unzip it and create a dataset directory just like the above**
 ### Train
 ```
 > python main.py --dataset selfie2anime
@@ -46,14 +47,22 @@ The results of the paper came from the **Tensorflow code**
 
 ### Resume Train
 ```
-> python main.py --dataset selfie2anime --resume True --start_iter <123456 for example>
+> python main.py --dataset selfie2anime --resume True --start_iter XXX
 ```
+* If you save the 200000 steps model,so you can use the command line `python main.py --dataset selfie2anime --resume True --start_iter 200001` for Resume Train
 * If the memory of gpu is **not sufficient**, set `--light` to True
 
 ### Test
 ```
 > python main.py --dataset selfie2anime --phase test
 ```
+* The test image will contain the attention map
+
+### create
+```
+> python main.py --dataset selfie2anime --phase create
+```
+* The create image just contain target image
 
 ## 主要贡献
 ➢实现无监督图像到图像翻译任务，**主要解决两个图像域间纹理和图像差异很大导致图像到图像翻译任务效果不好的问题**
@@ -106,11 +115,37 @@ respectively, (e) Our results,(f) CycleGAN (Zhu et al. (2017)), (g) UNIT (Liu et
 MUNIT (Huang et al. (2018)), (i) DRIT (Lee et al. (2018)), (j) AGGAN (Mejjati et al. (2018)).
 </font></div>
 
-# Pytorch 与 Paddle训练效果对比
-<div align="center">
-  <img src="./assets/pytorch.jpg" height="250"/><img src="./assets/paddle.jpg" height="250"/><br>
-</div>
-左边为Pytorch训练损失，右边为Paddle训练损失（部分）
+# 测试效果
+
+| 1000000w light selfie2anime | 1000000w light anime2selfie | 1000000w full selfie2anime | 1000000w full anime2selfie |
+|--|--|--|--|
+| IS: (1.5644363, 0.20113996) | IS: (1.9134496, 0.2261766)  | IS: (1.5334812, 0.17733584) | IS: (1.9919112, 0.21848756) |
+| FID: 0.8426080322265626  | FID: 1.096984634399414 | FID: 0.8286741638183593 | FID: 1.1184397888183595 |
+| KID_mean: 1.2977957725524902  | KID_mean: 1.9370842725038528 | KID_mean: 1.707526482641697 | KID_mean: 1.8982958048582077 |
+| KID_stddev: 0.21294353064149618 | KID_stddev: 0.3958268091082573  | KID_stddev: 0.36081753205507994 | KID_stddev: 0.34899383317679167 |
+| mean_FID: 1.3748193725585938 | mean_FID: 1.486142600250244  | mean_FID: 1.3621834487915039 | mean_FID: 1.4849468765258789 |
+| **mean_KID_mean: 11.555835604667664**| **mean_KID_mean: 15.389134127646683**  | **mean_KID_mean: 11.625613445416093** | **mean_KID_mean: 15.208403330296278** |
+| **mean_KID_stddev: 0.40995743009261787** | **mean_KID_stddev: 0.4632239909842611** | **mean_KID_stddev: 0.34452050761319697** | **mean_KID_stddev: 0.4152729648631066** |
+We can see the selfie2anime achieve the paper accuracy 
+
+# 代码与模型文件
+* New added `lr_scheduler.py` will change the learning rate that the paper has mentioned.
+* Both light mode & full mode have been trained for 1000000steps
+
+**You can download by BaiduYun. And then you should put it under the results/lfie2anime/model directory** 
+
+The Link: https://pan.baidu.com/s/1du0jt3sfoUy7RwkF7BW-gQ ; The Code: mxyp
+
+# 实例:
+![](https://ai-studio-static-online.cdn.bcebos.com/000aa490f4b34a81baf37205e18ad4237af9e95c5ef94a93bc16cdc63e70b2a6)
+![](https://ai-studio-static-online.cdn.bcebos.com/ff2fb561a1d94601b9c0ff4fbea1ecf66e50643dd924427aa4fa6ac3662bac28)
+![](https://ai-studio-static-online.cdn.bcebos.com/c89af111975940399c4ae9073111fd72a385ce2d6dae40abab6a071f24c9f440)
+* All right! She is Scarlett Johansson! From left to right, Original Image, Light Model, Full Model!
+
+
 
 # 获取更多
-更多论文研读信息参见CSDN blog: [DeepHao 【飞桨】GAN：U-GAT-IT【2020 ICLR】论文研读](https://blog.csdn.net/qq_39567427/article/details/107843670)
+* You can see the `requirements.txt` to get the right version for all modules
+* Cause I using the AIStudio environment, I can't determin all the packages needed. If you meet some ModuleNotFoundError, you just use `pip install` to install the Module.
+* Welcome to use AIStudio and PaddlePaddle, just baidu or google `PaddlePaddle` or `AIStudio`.
+* More about the paper, seeing CSDN blog: [DeepHao 【飞桨】GAN：U-GAT-IT【2020 ICLR】论文研读](https://blog.csdn.net/qq_39567427/article/details/107843670)
