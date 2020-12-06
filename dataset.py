@@ -3,6 +3,12 @@ import numpy as np
 import os
 import os.path
 
+'''
+根据论文提供的官方代码
+定义了随机裁剪函数Random_crop，归一化函数normalize、随机水平翻转函数
+RandomHorizontalFlip，图像尺寸调整函数Resize（Resize函数采用与官方代码同样的双线性插值函数）
+数据增强同样在PIL格式下的图片进行，对代码的还原精度尽可能最大
+'''
 
 def has_file_allowed_extension(filename, extensions):
     """Checks if a file is an allowed extension.
@@ -43,6 +49,7 @@ def default_loader(path):
     return pil_loader(path)
 
 
+# 定义随机裁剪函数
 def Random_crop(img, img_size):
     width, height = img.size
     width_range = width - img_size
@@ -57,10 +64,12 @@ def Random_crop(img, img_size):
     return img
 
 
+# 定义缩放函数
 def Resize(img, img_size):
-    return(img.resize((img_size, img_size),Image.ANTIALIAS))
+    return(img.resize((img_size, img_size), Image.BILINEAR))
 
 
+# 定义归一化函数
 def normalize(img, mean, std):
     img = img / 255.0
     mean=np.array(mean)
@@ -72,6 +81,8 @@ def normalize(img, mean, std):
     return img
 
 
+# 定义随机水平翻转函数
+# 由于PIL库中只有水平翻转，因此我们采用0，1随机数标志位实现随机水平翻转
 def RandomHorizontalFlip(img):
     random_flag = np.random.randint(2)
     if random_flag:
@@ -97,7 +108,7 @@ class DatasetFolder(object):
         self.batch_size = batch_size
         self.batch = []
 
-    
+    # 重定义__next__方法，数据迭代器的实现参考了百度飞桨百度架构师手把手教深度学习课程中的方法
     def __next__(self):
         """
         Args:
