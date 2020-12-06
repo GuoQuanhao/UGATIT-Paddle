@@ -5,8 +5,16 @@ from networks import *
 from utils import *
 from lr_scheduler import build_lr_scheduler
 from glob import glob
+import os
+
 
 class UGATIT(object) :
+    '''
+    Paddle框架下的UGATIT将模型的构建全部放在with结构中；
+    修改数据集读取方式，以Python原生迭代器方式进行读取，具体迭代器的生成参考dataset.py文件；
+    修改模型保存函数，将Paddle训练的多个模型以字典的方式保存为pickle格式；
+    修改模型优化器中的学习率，满足论文中迭代一定次数后学习率递减，学习率重定义参考lr_scheduler.py
+    '''
     def __init__(self, args):
         self.light = args.light
 
@@ -83,10 +91,12 @@ class UGATIT(object) :
 
     def build_model(self):
         """ DataLoader """
-        self.trainA = ImageFolder(os.path.join('dataset', self.dataset, 'trainA'), self.img_size, self.batch_size)
-        self.trainB = ImageFolder(os.path.join('dataset', self.dataset, 'trainB'), self.img_size, self.batch_size)
-        self.testA = ImageFolder(os.path.join('dataset', self.dataset, 'testA'), self.img_size, 1)
-        self.testB = ImageFolder(os.path.join('dataset', self.dataset, 'testB'), self.img_size, 1)
+        train_transform = True
+        test_transform = False
+        self.trainA = ImageFolder(os.path.join('dataset', self.dataset, 'trainA'), self.img_size, self.batch_size, train_transform)
+        self.trainB = ImageFolder(os.path.join('dataset', self.dataset, 'trainB'), self.img_size, self.batch_size, train_transform)
+        self.testA = ImageFolder(os.path.join('dataset', self.dataset, 'testA'), self.img_size, 1, test_transform)
+        self.testB = ImageFolder(os.path.join('dataset', self.dataset, 'testB'), self.img_size, 1, test_transform)
 
         self.trainA_loader = self.trainA
         self.trainB_loader = self.trainB
@@ -97,7 +107,7 @@ class UGATIT(object) :
         self.Rho_clipper = RhoClipper(0, 1)
 
     def train(self):
-        
+        # Paddle的with结构规则，只能在with结构中构建网络结构
         place = fluid.CUDAPlace(0) if self.device=='cuda' else fluid.CPUPlace()
         with fluid.dygraph.guard(place):
             
@@ -115,22 +125,34 @@ class UGATIT(object) :
             self.BCE_loss = BCEWithLogitsLoss()       
     
             """ Trainer """
-            self.G_optim  = fluid.optimizer.Adam(#learning_rate=self.lr,
-                                                 build_lr_scheduler('AdamOptimizer', self.lr, self.iteration, self.start_iter),
+            self.G_optim  = fluid.optimizer.Adam(build_lr_scheduler('AdamOptimizer', self.lr, self.iteration, self.start_iter),
                                                  beta1=0.5, beta2=0.999,
                                                  parameter_list=self.genA2B.parameters()+self.genB2A.parameters(),
                                                  regularization=fluid.regularizer.L2Decay(regularization_coeff=self.weight_decay))
             
-            self.D_optim  = fluid.optimizer.Adam(#learning_rate=self.lr,
-                                                 build_lr_scheduler('AdamOptimizer', self.lr, self.iteration, self.start_iter),
+            self.D_optim  = fluid.optimizer.Adam(build_lr_scheduler('AdamOptimizer', self.lr, self.iteration, self.start_iter),
                                                  beta1=0.5, beta2=0.999,
                                                  parameter_list=self.disGA.parameters()+self.disGB.parameters()+self.disLA.parameters()+self.disLB.parameters(),
                                                  regularization=fluid.regularizer.L2Decay(regularization_coeff=self.weight_decay))    
 
             #start_iter = 1
+            '''
             if self.resume:
                 print('load model!!!')
                 self.sload()
+            '''
+            if self.resume:
+                print('load model!!!')
+                model_list = glob(os.path.join(self.result_dir, self.dataset, 'model', '*.pickle'))
+                if not len(model_list) == 0:
+                    model_list.sort()
+                    iter = int(model_list[-1].split('_')[-1].split('.')[0])
+                    self.load(os.path.join(self.result_dir, self.dataset, 'model'), iter)
+                    print(" [*] Load SUCCESS")
+                    print(" [*]", model_list[-1])
+                else:
+                    print(" [*] Load FAILURE")
+                    return
         
             # training loop
             print('training start !')
@@ -382,7 +404,9 @@ class UGATIT(object) :
         
                 if step % self.save_freq == 0:
                     self.save(os.path.join(self.result_dir, self.dataset, 'model'), step)
-        
+
+                # 改写模型存储方式，Paddle暂未提供多个模型存放一个文件的方法
+                # 这里创造性的将训练产生的模型以pickle的方式存放在一个文件中
                 if step % 1000 == 0:
                     params = {}
                     params['genA2B'] = self.genA2B.state_dict()
@@ -393,7 +417,8 @@ class UGATIT(object) :
                     params['disLB'] = self.disLB.state_dict()
                     save_model(params, os.path.join(self.result_dir, self.dataset + '_params_latest.pickle'))
                     
-
+    # 改写模型存储方式，Paddle暂未提供多个模型存放一个文件的方法
+    # 这里创造性的将训练产生的模型以pickle的方式存放在一个文件中
     def save(self, dir, step):
         params = {}
         params['genA2B'] = self.genA2B.state_dict()
@@ -416,6 +441,7 @@ class UGATIT(object) :
 
 
     def test(self):
+        # Paddle的with结构规则，只能在with结构中构建网络结构
         place = fluid.CUDAPlace(0) if self.device=='cuda' else fluid.CPUPlace()
         with fluid.dygraph.guard(place):
             """ Define Generator, Discriminator """
@@ -432,14 +458,16 @@ class UGATIT(object) :
                 iter = int(model_list[-1].split('_')[-1].split('.')[0])
                 self.load(os.path.join(self.result_dir, self.dataset, 'model'), iter)
                 print(" [*] Load SUCCESS")
+                print(" [*]", model_list[-1])
             else:
                 print(" [*] Load FAILURE")
                 return
 
             self.genA2B.eval(), self.genB2A.eval()
-            for n, (real_A, _) in enumerate(self.testA_loader):
-                if n>6:
-                    break
+            #for n, (real_A, _) in enumerate(self.testA_loader):
+            for n in range(len(self.testA_loader)):
+                real_A =  next(self.testA_loader)[0]
+                
                 real_A = fluid.dygraph.to_variable(real_A)
     
                 fake_A2B, _, fake_A2B_heatmap = self.genA2B(real_A)
@@ -457,8 +485,11 @@ class UGATIT(object) :
                                       RGB2BGR(tensor2numpy(denorm(fake_A2B2A[0])))), 0)
     
                 cv2.imwrite(os.path.join(self.result_dir, self.dataset, 'test', 'A2B_%d.png' % (n + 1)), A2B * 255.0)
-    
-            for n, (real_B, _) in enumerate(self.testB_loader):           
+
+            #for n, (real_B, _) in enumerate(self.testB_loader):
+            for n in range(len(self.testB_loader)):
+                real_B =  next(self.testB_loader)[0]
+
                 real_B = fluid.dygraph.to_variable(real_B)
     
                 fake_B2A, _, fake_B2A_heatmap = self.genB2A(real_B)
@@ -478,3 +509,61 @@ class UGATIT(object) :
                 cv2.imwrite(os.path.join(self.result_dir, self.dataset, 'test', 'B2A_%d.png' % (n + 1)), B2A * 255.0)
 
             cv2.imwrite(os.path.join(self.result_dir, self.dataset, 'test', 'B2A_%d.png' % (n + 1)), B2A * 255.0)
+    
+    def create(self):
+        # Paddle的with结构规则，只能在with结构中构建网络结构
+        place = fluid.CUDAPlace(0) if self.device=='cuda' else fluid.CPUPlace()
+        with fluid.dygraph.guard(place):
+            """ Define Generator, Discriminator """
+            self.genA2B = ResnetGenerator(input_nc=3, output_nc=3, ngf=self.ch, n_blocks=self.n_res, img_size=self.img_size, light=self.light)
+            self.genB2A = ResnetGenerator(input_nc=3, output_nc=3, ngf=self.ch, n_blocks=self.n_res, img_size=self.img_size, light=self.light)
+            self.disGA = Discriminator(input_nc=3, ndf=self.ch, n_layers=7)
+            self.disGB = Discriminator(input_nc=3, ndf=self.ch, n_layers=7)
+            self.disLA = Discriminator(input_nc=3, ndf=self.ch, n_layers=5)
+            self.disLB = Discriminator(input_nc=3, ndf=self.ch, n_layers=5)
+
+            model_list = glob(os.path.join(self.result_dir, self.dataset, 'model', '*.pickle'))
+            if not len(model_list) == 0:
+                model_list.sort()
+                iter = int(model_list[-1].split('_')[-1].split('.')[0])
+                self.load(os.path.join(self.result_dir, self.dataset, 'model'), iter)
+                print(" [*] Load SUCCESS")
+                print(" [*]", model_list[-1])
+            else:
+                print(" [*] Load FAILURE")
+                return
+
+            self.genA2B.eval(), self.genB2A.eval()
+            #for n, (real_A, _) in enumerate(self.testA_loader):
+            for n in range(len(self.testA_loader)):
+                real_A =  next(self.testA_loader)[0]
+                
+                real_A = fluid.dygraph.to_variable(real_A)
+    
+                fake_A2B, _, fake_A2B_heatmap = self.genA2B(real_A)
+    
+                fake_A2B2A, _, fake_A2B2A_heatmap = self.genB2A(fake_A2B)
+    
+                fake_A2A, _, fake_A2A_heatmap = self.genB2A(real_A)
+    
+                A2B = RGB2BGR(tensor2numpy(denorm(fake_A2B[0])))
+    
+                cv2.imwrite(os.path.join(self.result_dir, self.dataset, 'create', 'A2B_%d.png' % (n + 1)), A2B * 255.0)
+
+            #for n, (real_B, _) in enumerate(self.testB_loader):
+            for n in range(len(self.testB_loader)):
+                real_B =  next(self.testB_loader)[0]
+
+                real_B = fluid.dygraph.to_variable(real_B)
+    
+                fake_B2A, _, fake_B2A_heatmap = self.genB2A(real_B)
+    
+                fake_B2A2B, _, fake_B2A2B_heatmap = self.genA2B(fake_B2A)
+    
+                fake_B2B, _, fake_B2B_heatmap = self.genA2B(real_B)
+    
+                B2A = RGB2BGR(tensor2numpy(denorm(fake_B2A[0])))
+    
+                cv2.imwrite(os.path.join(self.result_dir, self.dataset, 'create', 'B2A_%d.png' % (n + 1)), B2A * 255.0)
+
+            cv2.imwrite(os.path.join(self.result_dir, self.dataset, 'create', 'B2A_%d.png' % (n + 1)), B2A * 255.0)
