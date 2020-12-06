@@ -126,7 +126,8 @@ MUNIT (Huang et al. (2018)), (i) DRIT (Lee et al. (2018)), (j) AGGAN (Mejjati et
 | mean_FID: 1.3748193725585938 | mean_FID: 1.486142600250244  | mean_FID: 1.3621834487915039 | mean_FID: 1.4849468765258789 |
 | **mean_KID_mean: 11.555835604667664**| **mean_KID_mean: 15.389134127646683**  | **mean_KID_mean: 11.625613445416093** | **mean_KID_mean: 15.208403330296278** |
 | **mean_KID_stddev: 0.40995743009261787** | **mean_KID_stddev: 0.4632239909842611** | **mean_KID_stddev: 0.34452050761319697** | **mean_KID_stddev: 0.4152729648631066** |
-We can see the selfie2anime achieve the paper accuracy 
+
+* We can see the selfie2anime achieve the paper accuracy 
 
 # 代码与模型文件
 * New added `lr_scheduler.py` will change the learning rate that the paper has mentioned.
