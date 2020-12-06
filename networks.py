@@ -3,7 +3,15 @@ from paddle.fluid.dygraph import Conv2D, Linear, InstanceNorm, SpectralNorm
 from paddle.fluid.dygraph import Sequential
 import paddle.fluid.dygraph.nn as nn
 
+#################################################################################
+#这一部分十分感谢百度飞桨团队对github中issue问题的解答，对各种函数定义给出的建议与方案##
+#################################################################################
 
+'''
+重新定义的类（或称论文中的函数）有：BCEWithLogitsLoss、Spectralnorm、ReflectionPad2d、
+Upsample、ReLU、LeakyReLU；
+需要注意的是ReLU、LeakyReLU中的inplace函数需要设为false，这一点百度飞桨团队在issue中给出了解答
+'''
 class BCEWithLogitsLoss():
     def __init__(self, weight=None, reduction='mean'):
         self.weight = weight
