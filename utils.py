@@ -6,6 +6,9 @@ import pickle
 import paddle.fluid as fluid
 
 
+'''
+重新定义load_model与save_model来适配pickle文件的读取方式
+'''
 def load_model(pkl_file):
     with open(pkl_file, 'rb') as f:
         state_dict = pickle.load(f)
